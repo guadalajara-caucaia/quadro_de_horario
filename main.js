@@ -43,6 +43,35 @@ const classAllocations = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Title Persistence
+    const editableTitles = document.querySelectorAll('[contenteditable="true"]');
+
+    function saveTitles() {
+        const titles = {};
+        editableTitles.forEach(el => {
+            titles[el.id] = el.textContent;
+        });
+        localStorage.setItem('scheduleTitles', JSON.stringify(titles));
+    }
+
+    function loadTitles() {
+        const savedTitles = JSON.parse(localStorage.getItem('scheduleTitles'));
+        if (savedTitles) {
+            editableTitles.forEach(el => {
+                if (savedTitles[el.id]) {
+                    el.textContent = savedTitles[el.id];
+                }
+            });
+        }
+    }
+
+    editableTitles.forEach(el => {
+        el.addEventListener('blur', saveTitles);
+    });
+
+    loadTitles();
+
+
     let currentAllocations = loadAllocations();
     let uniqueSubjects = getUniqueSubjects(currentAllocations);
     assignSubjectColors(uniqueSubjects);
@@ -164,6 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Render
     renderAllSchedules();
+
+    // --- Print Logic ---
+    const printBtn = document.getElementById('print-btn');
+    printBtn.addEventListener('click', () => {
+        window.print();
+    });
 
     // --- Modal & Management Logic ---
     const modal = document.getElementById('management-modal');
