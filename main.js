@@ -82,13 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
         gradeSelects.clear();
         const gradeRows = document.querySelectorAll('tr[data-grade]');
 
-        gradeRows.forEach(row => {
+        const savedSchedule = JSON.parse(localStorage.getItem('savedScheduleState')) || {};
+
+        gradeRows.forEach((row, rowIndex) => {
+
             const gradeName = row.dataset.grade;
             if (!gradeSelects.has(gradeName)) {
                 gradeSelects.set(gradeName, []);
             }
             const cells = row.querySelectorAll('.subject-cell');
-            cells.forEach(cell => {
+
+            cells.forEach((cell, cellIndex) => {
+
                 // Clear previous content
                 cell.innerHTML = '';
 
@@ -104,12 +109,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     const option = document.createElement('option');
                     option.value = subject;
                     option.textContent = subject || '---------';
-                    if (subject === initialSubject) {
-                        option.selected = true;
-                        printableSpan.textContent = subject;
-                    }
+
                     select.appendChild(option);
                 });
+
+                const savedValueKey = `${gradeName}-${rowIndex}-${cellIndex}`;
+                const savedValue = savedSchedule[savedValueKey];
+
+                if (savedValue !== undefined) {
+                    select.value = savedValue;
+                    printableSpan.textContent = savedValue;
+                } else {
+                    select.value = initialSubject;
+                    printableSpan.textContent = initialSubject;
+                }
+
 
                 select.addEventListener('change', () => {
                     printableSpan.textContent = select.value;
@@ -151,7 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const option of select.options) {
                 if (!option.value) continue;
                 const subject = option.value;
-                const allocationCount = allocations[subject] || 0;
+
+                const allocationCount = allocations[subject] || 99; // Allow unscheduled subjects to be added
+
                 const currentCount = currentCounts[subject] || 0;
                 if (subject === select.value) {
                     option.disabled = false;
@@ -199,6 +215,31 @@ document.addEventListener('DOMContentLoaded', () => {
     printBtn.addEventListener('click', () => {
         window.print();
     });
+
+
+    // --- Schedule Save Logic ---
+    const saveScheduleBtn = document.getElementById('save-schedule-btn');
+
+    function saveSchedule() {
+        const scheduleState = {};
+        const rows = document.querySelectorAll('tr[data-grade]');
+        rows.forEach((row, rowIndex) => {
+            const gradeName = row.dataset.grade;
+            const cells = row.querySelectorAll('.subject-cell');
+            cells.forEach((cell, cellIndex) => {
+                const select = cell.querySelector('select');
+                if (select) {
+                    const key = `${gradeName}-${rowIndex}-${cellIndex}`;
+                    scheduleState[key] = select.value;
+                }
+            });
+        });
+        localStorage.setItem('savedScheduleState', JSON.stringify(scheduleState));
+        alert('Horário salvo com sucesso!');
+    }
+
+    saveScheduleBtn.addEventListener('click', saveSchedule);
+
 
     // --- Modal & Management Logic ---
     const modal = document.getElementById('management-modal');
