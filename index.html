@@ -14,12 +14,10 @@
             align-items: center;
             flex-direction: column;
         }
-
         h1 {
             color: #000;
             margin-bottom: 20px;
         }
-
         table {
             border-collapse: collapse;
             width: 95%;
@@ -27,74 +25,159 @@
             margin: 20px auto;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-
         th, td {
-            border: 1px solid #ccc;
+            border: 1px solid black;
             padding: 10px;
             text-align: center;
         }
-
         thead th {
-            background-color: #e9ecef;
+            background-color: lightblue;
             font-weight: bold;
         }
-
         .serie {
             background-color: #dee2e6;
             font-weight: bold;
             vertical-align: middle;
-            width: 20px; /* Adjust as needed */
+            width: 20px;
         }
-
         .serie span {
             writing-mode: vertical-rl;
             transform: rotate(180deg);
             display: block;
         }
-
         tbody tr:nth-child(odd) {
             background-color: #f8f9fa;
         }
-
         tbody tr:nth-child(even) {
             background-color: #fff;
         }
-
         .intervalo {
-            background-color: #ced4da;
+            background-color: lightgray;
             font-weight: bold;
             color: #000;
         }
-
         .intervalo-time {
             font-weight: bold;
         }
-
-        /* Specific cell styles from the image */
-        .highlight-yellow {
-            background-color: #fff3cd;
+        .printable-subject {
+            display: none;
         }
-
-        .text-bold {
-            font-weight: bold;
+        .last-class-row td {
+            background-color: orange;
         }
-
-        .text-underline {
-            text-decoration: underline;
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95%;
+            max-width: 1400px;
+            flex-wrap: wrap;
         }
-
-        .highlight-lightyellow {
-            background-color: lightyellow;
+        #manage-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
         }
-
-        .highlight-lightblue {
-            background-color: lightblue;
+        .modal {
+          display: none;
+          position: fixed;
+          z-index: 1000;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+          background-color: #fefefe;
+          margin: 10% auto;
+          padding: 20px;
+          border: 1px solid #888;
+          width: 80%;
+          max-width: 700px;
+          border-radius: 8px;
+        }
+        .close-btn {
+          color: #aaa;
+          float: right;
+          font-size: 28px;
+          font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+          color: black;
+          text-decoration: none;
+          cursor: pointer;
+        }
+        #allocation-form {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 15px;
+          align-items: center;
+        }
+        #allocation-form h3, #allocations-list h3 {
+          grid-column: 1 / -1;
+        }
+        #allocation-form button {
+            grid-column: 1 / -1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 1cm;
+            }
+            body {
+                background-color: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            h1 {
+                font-size: 14pt;
+                margin-bottom: 10px;
+            }
+            table {
+                width: 100%;
+                font-size: 8pt;
+                page-break-inside: auto;
+            }
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            thead {
+                display: table-header-group;
+            }
+            th, td {
+                padding: 4px;
+                border: 1px solid #000;
+            }
+            .serie {
+                background-color: #dee2e6 !important;
+            }
+            .intervalo {
+                background-color: lightgray !important;
+            }
+            select {
+                display: none;
+            }
+            .printable-subject {
+                display: inline;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>Horário do 6º ao 9º Ano – Manhã – Ano Letivo 2025 (01.09)</h1>
+    <div class="header-container">
+        <h1>Horário do 6º ao 9º Ano – Manhã – Ano Letivo 2025 (01.09)</h1>
+        <button id="manage-btn" class="no-print">Gerenciar Aulas</button>
+    </div>
 
     <table>
         <thead>
@@ -309,8 +392,408 @@
                 <td class="subject-cell" data-subject=""></td>
                 <td class="subject-cell" data-subject="Port./Geografia"></td>
             </tr>
+            <!-- 1º Ano -->
+            <tr data-grade="1º Ano - Manhã">
+                <td rowspan="7" class="serie"><span>1º Ano - Manhã</span></td>
+                <td>07:15 às 08:05</td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Port./Literatura/Marcos"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+            </tr>
+            <tr data-grade="1º Ano - Manhã">
+                <td>08:05 às 08:55</td>
+                <td class="subject-cell" data-subject="História/Hiago"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+            </tr>
+            <tr data-grade="1º Ano - Manhã">
+                <td>08:55 às 09:45</td>
+                <td class="subject-cell" data-subject="Artes/Proj.deVida/Josué"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Port./Interp.Textual/Marcos"></td>
+            </tr>
+            <tr data-grade="1º Ano - Manhã">
+                <td class="intervalo-time">09:45 às 10:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="1º Ano - Manhã">
+                <td>10:10 às 11:00</td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="História/Hiago"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Marcos"></td>
+            </tr>
+            <tr data-grade="1º Ano - Manhã">
+                <td>11:00 às 11:50</td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Marcos"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+            </tr>
+            <tr data-grade="1º Ano - Manhã">
+                <td>11:50 às 12:40</td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Marcos"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Marcos"></td>
+                <td class="subject-cell" data-subject="Filosofia/Socio./Josué"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+            </tr>
+            <!-- 2º Ano -->
+            <tr data-grade="2º Ano - Manhã">
+                <td rowspan="7" class="serie"><span>2º Ano - Manhã</span></td>
+                <td>07:15 às 08:05</td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+            </tr>
+            <tr data-grade="2º Ano - Manhã">
+                <td>08:05 às 08:55</td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Filosofia/Socio./Josué"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Marcos"></td>
+            </tr>
+            <tr data-grade="2º Ano - Manhã">
+                <td>08:55 às 09:45</td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Marcos"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Marcos"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+            </tr>
+            <tr data-grade="2º Ano - Manhã">
+                <td class="intervalo-time">09:45 às 10:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="2º Ano - Manhã">
+                <td>10:10 às 11:00</td>
+                <td class="subject-cell" data-subject="História/Hiago"></td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Marcos"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="História/Hiago"></td>
+            </tr>
+            <tr data-grade="2º Ano - Manhã">
+                <td>11:00 às 11:50</td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Port./Interp.Textual/Marcos"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+            </tr>
+            <tr data-grade="2º Ano - Manhã">
+                <td>11:50 às 12:40</td>
+                <td class="subject-cell" data-subject="Artes/Proj.deVida/Josué"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+                <td class="subject-cell" data-subject="Port./Literatura/Marcos"></td>
+            </tr>
+            <!-- 3º Ano -->
+            <tr data-grade="3º Ano - Manhã">
+                <td rowspan="7" class="serie"><span>3º Ano - Manhã</span></td>
+                <td>07:15 às 08:05</td>
+                <td class="subject-cell" data-subject="Artes/Proj.deVida/Josué"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Marcos"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Port./Interp.Textual/Marcos"></td>
+            </tr>
+            <tr data-grade="3º Ano - Manhã">
+                <td>08:05 às 08:55</td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+                <td class="subject-cell" data-subject="Port./Literatura/Marcos"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Marcos"></td>
+                <td class="subject-cell" data-subject="História/Hiago"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+            </tr>
+            <tr data-grade="3º Ano - Manhã">
+                <td>08:55 às 09:45</td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Filosofia/Josué"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+            </tr>
+            <tr data-grade="3º Ano - Manhã">
+                <td class="intervalo-time">09:45 às 10:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="3º Ano - Manhã">
+                <td>10:10 às 11:00</td>
+                <td class="subject-cell" data-subject="Filosofia/Josué"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Marcos"></td>
+                <td class="subject-cell" data-subject="História/Hiago"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+            </tr>
+            <tr data-grade="3º Ano - Manhã">
+                <td>11:00 às 11:50</td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Biologia/Amanda"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Marcos"></td>
+            </tr>
+            <tr data-grade="3º Ano - Manhã">
+                <td>11:50 às 12:40</td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+            </tr>
         </tbody>
     </table>
+
+    <h1>Horário do 6º ao 9º Ano - Tarde – Ano Letivo 2025 (19.08)</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Sér.</th>
+                <th>Horário</th>
+                <th>Segunda-feira</th>
+                <th>Terça-feira</th>
+                <th>Quarta-feira</th>
+                <th>Quinta-feira</th>
+                <th>Sexta-feira</th>
+            </tr>
+        </thead>
+        <tbody id="timetable-body-tarde">
+            <!-- 6º Ano - Tarde -->
+            <tr data-grade="6º Ano - Tarde">
+                <td rowspan="6" class="serie"><span>6º Ano - Tarde</span></td>
+                <td>13:15 às 14:05</td>
+                <td class="subject-cell" data-subject="Ciências/Amon-rá"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Filosofia/Ednar Lima"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+            </tr>
+            <tr data-grade="6º Ano - Tarde">
+                <td>14:05 às 14:55</td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Socioemocional/Arielle"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Arielle"></td>
+                <td class="subject-cell" data-subject="História/Diógenes"></td>
+            </tr>
+            <tr data-grade="6º Ano - Tarde">
+                <td>14:55 às 15:45</td>
+                <td class="subject-cell" data-subject="Ciências/Amon-rá"></td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Arielle"></td>
+                <td class="subject-cell" data-subject="Port./Redação/Arielle"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+            </tr>
+            <tr data-grade="6º Ano - Tarde">
+                <td class="intervalo-time">15:45 às 16:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="6º Ano - Tarde">
+                <td>16:10 às 17:00</td>
+                <td class="subject-cell" data-subject="Port./Int.Textual/Arielle"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+            </tr>
+            <tr data-grade="6º Ano - Tarde">
+                <td>17:00 às 17:50</td>
+                <td class="subject-cell" data-subject="Artes/Josué"></td>
+                <td class="subject-cell" data-subject="Port./Int.Textual/Arielle"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Arielle"></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject="História/Diógenes"></td>
+            </tr>
+            <!-- 7º Ano - Tarde -->
+            <tr data-grade="7º Ano - Tarde">
+                <td rowspan="6" class="serie"><span>7º Ano - Tarde</span></td>
+                <td>13:15 às 14:05</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="7º Ano - Tarde">
+                <td>14:05 às 14:55</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="7º Ano - Tarde">
+                <td>14:55 às 15:45</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="7º Ano - Tarde">
+                <td class="intervalo-time">15:45 às 16:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="7º Ano - Tarde">
+                <td>16:10 às 17:00</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="7º Ano - Tarde">
+                <td>17:00 às 17:50</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <!-- 8º Ano - Tarde -->
+            <tr data-grade="8º Ano - Tarde">
+                <td rowspan="7" class="serie"><span>8º Ano - Tarde</span></td>
+                <td>13:15 às 14:05</td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Port./Int.Textual/Arielle"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="História/Diógenes"></td>
+            </tr>
+            <tr data-grade="8º Ano - Tarde">
+                <td>14:05 às 14:55</td>
+                <td class="subject-cell" data-subject="Ciências/Amon-rá"></td>
+                <td class="subject-cell" data-subject="Inglês/Tiago"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+            </tr>
+            <tr data-grade="8º Ano - Tarde">
+                <td>14:55 às 15:45</td>
+                <td class="subject-cell" data-subject="Artes/Josué"></td>
+                <td class="subject-cell" data-subject="Mat./Geometria/Gustavo"></td>
+                <td class="subject-cell" data-subject="Educ.Física/Renê"></td>
+                <td class="subject-cell" data-subject="Química/Amon"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+            </tr>
+            <tr data-grade="8º Ano - Tarde">
+                <td class="intervalo-time">15:45 às 16:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="8º Ano - Tarde">
+                <td>16:10 às 17:00</td>
+                <td class="subject-cell" data-subject="Ciências/Amon-rá"></td>
+                <td class="subject-cell" data-subject="Port./Int.Textual/Arielle"></td>
+                <td class="subject-cell" data-subject="Física/Anderson"></td>
+                <td class="subject-cell" data-subject="Socioemocional/Arielle"></td>
+                <td class="subject-cell" data-subject="História/Diógenes"></td>
+            </tr>
+            <tr data-grade="8º Ano - Tarde">
+                <td>17:00 às 17:50</td>
+                <td class="subject-cell" data-subject="Port./Redação/Arielle"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Mat./Álgebra/Gustavo"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Arielle"></td>
+                <td class="subject-cell" data-subject="Geografia/André"></td>
+            </tr>
+            <tr data-grade="8º Ano - Tarde">
+                <td>17:50 às 18:40</td>
+                <td class="subject-cell" data-subject="Port./Redação/Arielle"></td>
+                <td class="subject-cell" data-subject="Filosofia/Josué"></td>
+                <td class="subject-cell" data-subject="Port./Gramática/Arielle"></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <!-- 9º Ano - Tarde -->
+            <tr data-grade="9º Ano - Tarde">
+                <td rowspan="7" class="serie"><span>9º Ano - Tarde</span></td>
+                <td>13:15 às 14:05</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="9º Ano - Tarde">
+                <td>14:05 às 14:55</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="9º Ano - Tarde">
+                <td>14:55 às 15:45</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="9º Ano - Tarde">
+                <td class="intervalo-time">15:45 às 16:05</td>
+                <td colspan="5" class="intervalo">INTERVALO</td>
+            </tr>
+            <tr data-grade="9º Ano - Tarde">
+                <td>16:10 às 17:00</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="9º Ano - Tarde">
+                <td>17:00 às 17:50</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+            <tr data-grade="9º Ano - Tarde">
+                <td>17:50 às 18:40</td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+                <td class="subject-cell" data-subject=""></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="management-modal" class="modal no-print">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Gerenciar Alocação de Aulas</h2>
+        <form id="allocation-form">
+          <h3>Adicionar / Editar Alocação</h3>
+          <label for="subject-input">Matéria/Professor:</label>
+          <input type="text" id="subject-input" placeholder="Ex: Artes/Josué" required>
+          <label for="grade-select">Turma:</label>
+          <select id="grade-select" required></select>
+          <label for="count-input">Número de Aulas:</label>
+          <input type="number" id="count-input" min="0" value="1" required>
+          <button type="submit">Salvar Alocação</button>
+        </form>
+        <hr>
+        <h3>Alocações Atuais</h3>
+        <div id="allocations-list"></div>
+      </div>
+    </div>
 
     <script src="main.js" defer></script>
 </body>
