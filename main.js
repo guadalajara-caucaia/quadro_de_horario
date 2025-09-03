@@ -81,15 +81,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderAllSchedules() {
         gradeSelects.clear();
         const gradeRows = document.querySelectorAll('tr[data-grade]');
+
         const savedSchedule = JSON.parse(localStorage.getItem('savedScheduleState')) || {};
 
         gradeRows.forEach((row, rowIndex) => {
+
             const gradeName = row.dataset.grade;
             if (!gradeSelects.has(gradeName)) {
                 gradeSelects.set(gradeName, []);
             }
             const cells = row.querySelectorAll('.subject-cell');
+
             cells.forEach((cell, cellIndex) => {
+
                 // Clear previous content
                 cell.innerHTML = '';
 
@@ -105,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const option = document.createElement('option');
                     option.value = subject;
                     option.textContent = subject || '---------';
+
                     select.appendChild(option);
                 });
 
@@ -118,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     select.value = initialSubject;
                     printableSpan.textContent = initialSubject;
                 }
+
 
                 select.addEventListener('change', () => {
                     printableSpan.textContent = select.value;
@@ -159,7 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const option of select.options) {
                 if (!option.value) continue;
                 const subject = option.value;
+
                 const allocationCount = allocations[subject] || 99; // Allow unscheduled subjects to be added
+
                 const currentCount = currentCounts[subject] || 0;
                 if (subject === select.value) {
                     option.disabled = false;
@@ -207,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     printBtn.addEventListener('click', () => {
         window.print();
     });
+
 
     // --- Schedule Save Logic ---
     const saveScheduleBtn = document.getElementById('save-schedule-btn');
