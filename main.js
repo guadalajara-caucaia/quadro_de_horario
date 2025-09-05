@@ -1,33 +1,31 @@
+/**
+ * @file main.js
+ * @description This file contains all the client-side logic for the interactive timetable application.
+ */
+
+// --- Data Definitions ---
+
+/**
+ * A map of subject names to their assigned background colors.
+ * This is populated dynamically.
+ * @type {Object.<string, string>}
+ */
 const subjectColors = {};
+
+/**
+ * A palette of colors to be used for the subjects.
+ * @type {string[]}
+ */
 const colorPalette = [
     '#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF',
     '#FFC8DD', '#FFD8BE', '#FFFAC0', '#D4F0C0', '#B0E0E6', '#B4D8E7', '#C6D8FF', '#E1D4FF'
 ];
 
-function getUniqueSubjects(allocations) {
-    const allSubjects = new Set([""]); // Start with empty option
-    for (const grade in allocations) {
-        for (const subject in allocations[grade]) {
-            allSubjects.add(subject);
-        }
-    }
-    return [...allSubjects].sort();
-}
-
-function assignSubjectColors(subjects) {
-    let colorIndex = 0;
-    // Clear existing colors
-    for (const key in subjectColors) {
-        delete subjectColors[key];
-    }
-    subjects.forEach(subject => {
-        if (subject) {
-            subjectColors[subject] = colorPalette[colorIndex % colorPalette.length];
-            colorIndex++;
-        }
-    });
-}
-
+/**
+ * The default class allocations. This is used if no data is found in localStorage.
+ * Structure: { "Grade Name": { "Subject/Teacher": Number of Classes } }
+ * @type {Object.<string, Object.<string, number>>}
+ */
 const classAllocations = {
     "6º Ano - Manhã": { "Port./Interp.Textual/Bruna": 2, "Port./Gramática/Bruna": 2, "Port./Redação/Bruna": 2, "Artes/Josué": 1, "Educ. Física/René": 2, "Mat./Álgebra/Lucas": 3, "Filosofia/Ednar Lima": 1, "Mat./Geom./Lucas": 2, "História/Diógenes": 2, "Sócio. Emocional/Bruna": 1, "Geografia/André": 2, "Ciências/Amon-rá": 2, "Inglês/Raul": 2, },
     "7º Ano - Manhã": { "Inglês/Tiago": 2, "Mat./Álgebra/Lucas": 3, "História/Diógenes": 2, "Port./Redação/Bruna": 1, "Port./Gramática/Bruna": 2, "Ciências/Amon-rá": 3, "Port./Interp.Textual/Bruna": 3, "Educ. Física/René": 2, "Sócio. Emocional/Bruna": 1, "Filosofia/Josué": 1, "Mat./Geom./Lucas": 1, "Geografia/André": 2, "Artes/Josué": 1, },
@@ -42,233 +40,270 @@ const classAllocations = {
     "9º Ano - Tarde": {},
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Title Persistence
-    const editableTitles = document.querySelectorAll('[contenteditable="true"]');
 
-    function saveTitles() {
-        const titles = {};
+/**
+ * Main application object to encapsulate all functionality.
+ */
+const App = {
+    // --- Properties ---
+    currentAllocations: {},
+    uniqueSubjects: [],
+    gradeSelects: new Map(),
+
+    // --- Initialization ---
+    init() {
+        this.currentAllocations = this.loadData('classAllocations', classAllocations);
+        this.initTitles();
+        this.renderAllSchedules();
+        this.initButtons();
+        this.initModal();
+    },
+
+    /**
+     * Initializes editable titles, loading from and saving to localStorage.
+     */
+    initTitles() {
+        const editableTitles = document.querySelectorAll('[contenteditable="true"]');
+        const savedTitles = this.loadData('scheduleTitles', {});
+
         editableTitles.forEach(el => {
-            titles[el.id] = el.textContent;
-        });
-        localStorage.setItem('scheduleTitles', JSON.stringify(titles));
-    }
-
-    function loadTitles() {
-        const savedTitles = JSON.parse(localStorage.getItem('scheduleTitles'));
-        if (savedTitles) {
-            editableTitles.forEach(el => {
-                if (savedTitles[el.id]) {
-                    el.textContent = savedTitles[el.id];
-                }
+            if (savedTitles[el.id]) {
+                el.textContent = savedTitles[el.id];
+            }
+            el.addEventListener('blur', () => {
+                const titles = {};
+                editableTitles.forEach(el => { titles[el.id] = el.textContent; });
+                this.saveData('scheduleTitles', titles);
             });
-        }
-    }
+        });
+    },
 
-    editableTitles.forEach(el => {
-        el.addEventListener('blur', saveTitles);
-    });
+    /**
+     * Initializes all main buttons on the page.
+     */
+    initButtons() {
+        document.getElementById('print-btn').addEventListener('click', () => window.print());
+        document.getElementById('save-schedule-btn').addEventListener('click', () => this.saveScheduleState());
+    },
 
-    loadTitles();
+    /**
+     * Initializes the management modal, including its form and event listeners.
+     */
+    initModal() {
+        const modal = document.getElementById('management-modal');
+        const manageBtn = document.getElementById('manage-btn');
+        const closeBtn = document.querySelector('.close-btn');
+        const gradeSelect = document.getElementById('grade-select');
+        const allocationsListDiv = document.getElementById('allocations-list');
+        const allocationForm = document.getElementById('allocation-form');
 
+        // Open/close logic
+        manageBtn.onclick = () => {
+            this.populateAllocationsList();
+            modal.style.display = 'block';
+        };
+        closeBtn.onclick = () => modal.style.display = 'none';
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
 
-    let currentAllocations = loadAllocations();
-    let uniqueSubjects = getUniqueSubjects(currentAllocations);
-    assignSubjectColors(uniqueSubjects);
+        // Form submission logic
+        allocationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const subjectInput = document.getElementById('subject-input');
+            const grade = gradeSelect.value;
+            const count = parseInt(document.getElementById('count-input').value, 10);
+            const subject = subjectInput.value.trim();
 
-    const gradeSelects = new Map();
+            if (!subject || !grade || isNaN(count)) {
+                alert('Por favor, preencha todos os campos corretamente.');
+                return;
+            }
 
-    function renderAllSchedules() {
-        gradeSelects.clear();
+            if (!this.currentAllocations[grade]) this.currentAllocations[grade] = {};
+            this.currentAllocations[grade][subject] = count;
+
+            this.saveData('classAllocations', this.currentAllocations);
+            this.populateAllocationsList();
+            this.renderAllSchedules();
+            allocationForm.reset();
+            subjectInput.focus();
+        });
+
+        // Delete logic (event delegation)
+        allocationsListDiv.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const grade = e.target.dataset.grade;
+                const subject = e.target.dataset.subject;
+                if (confirm(`Tem certeza que deseja excluir "${subject}" da turma "${grade}"?`)) {
+                    delete this.currentAllocations[grade][subject];
+                    this.saveData('classAllocations', this.currentAllocations);
+                    this.populateAllocationsList();
+                    this.renderAllSchedules();
+                }
+            }
+        });
+    },
+
+    // --- Core Rendering & Logic ---
+
+    /**
+     * Main function to render the entire set of timetables.
+     * It clears the existing tables and rebuilds them from the current state.
+     */
+    renderAllSchedules() {
+        this.gradeSelects.clear();
+        this.uniqueSubjects = this.getUniqueSubjects();
+        this.assignSubjectColors();
+
         const gradeRows = document.querySelectorAll('tr[data-grade]');
-
-        const savedSchedule = JSON.parse(localStorage.getItem('savedScheduleState')) || {};
+        const savedSchedule = this.loadData('savedScheduleState', {});
 
         gradeRows.forEach((row, rowIndex) => {
-
             const gradeName = row.dataset.grade;
-            if (!gradeSelects.has(gradeName)) {
-                gradeSelects.set(gradeName, []);
+            if (!this.gradeSelects.has(gradeName)) {
+                this.gradeSelects.set(gradeName, []);
             }
             const cells = row.querySelectorAll('.subject-cell');
-
             cells.forEach((cell, cellIndex) => {
-
-                // Clear previous content
-                cell.innerHTML = '';
-
-                const select = document.createElement('select');
-                const printableSpan = document.createElement('span');
-                printableSpan.className = 'printable-subject';
-                const initialSubject = cell.dataset.subject.replace(/\s\/\s/g, '/').trim();
-
-                uniqueSubjects = getUniqueSubjects(currentAllocations);
-                assignSubjectColors(uniqueSubjects);
-
-                uniqueSubjects.forEach(subject => {
-                    const option = document.createElement('option');
-                    option.value = subject;
-                    option.textContent = subject || '---------';
-
-                    select.appendChild(option);
-                });
-
-                const savedValueKey = `${gradeName}-${rowIndex}-${cellIndex}`;
-                const savedValue = savedSchedule[savedValueKey];
-
-                if (savedValue !== undefined) {
-                    select.value = savedValue;
-                    printableSpan.textContent = savedValue;
-                } else {
-                    select.value = initialSubject;
-                    printableSpan.textContent = initialSubject;
-                }
-
-
-                select.addEventListener('change', () => {
-                    printableSpan.textContent = select.value;
-                    applyCellColor(cell, select.value);
-                    updateGradeSelects(gradeName);
-                });
-
-                cell.appendChild(select);
-                cell.appendChild(printableSpan);
-                gradeSelects.get(gradeName).push(select);
-                applyCellColor(cell, initialSubject);
+                this.createCellSelect(cell, gradeName, rowIndex, cellIndex, savedSchedule);
             });
         });
 
-        for (const [gradeName, selects] of gradeSelects.entries()) {
-            updateGradeSelects(gradeName);
+        for (const gradeName of this.gradeSelects.keys()) {
+            this.updateGradeSelects(gradeName);
         }
-        highlightLastClasses();
-    }
+        this.highlightLastClasses();
+        this.populateModalGradeSelect();
+    },
 
-    function applyCellColor(targetCell, subject) {
-        if (subject && subjectColors[subject]) {
-            targetCell.style.backgroundColor = subjectColors[subject];
-        } else {
-            targetCell.style.backgroundColor = '';
-        }
-    }
+    /**
+     * Creates and configures a single select element for a timetable cell.
+     */
+    createCellSelect(cell, gradeName, rowIndex, cellIndex, savedSchedule) {
+        cell.innerHTML = ''; // Clear previous content
+        const select = document.createElement('select');
+        const printableSpan = document.createElement('span');
+        printableSpan.className = 'printable-subject';
 
-    function updateGradeSelects(gradeName) {
-        const selectsInGrade = gradeSelects.get(gradeName);
-        const allocations = currentAllocations[gradeName] || {};
+        const initialSubject = cell.dataset.subject.replace(/\s\/\s/g, '/').trim();
+
+        this.uniqueSubjects.forEach(subject => {
+            const option = document.createElement('option');
+            option.value = subject;
+            option.textContent = subject || '---------';
+            select.appendChild(option);
+        });
+
+        const savedValueKey = `${gradeName}-${rowIndex}-${cellIndex}`;
+        const savedValue = savedSchedule[savedValueKey];
+
+        select.value = (savedValue !== undefined) ? savedValue : initialSubject;
+        printableSpan.textContent = select.value;
+
+        select.addEventListener('change', () => {
+            printableSpan.textContent = select.value;
+            this.applyCellColor(cell, select.value);
+            this.updateGradeSelects(gradeName);
+        });
+
+        cell.appendChild(select);
+        cell.appendChild(printableSpan);
+        this.gradeSelects.get(gradeName).push(select);
+        this.applyCellColor(cell, select.value);
+    },
+
+    /**
+     * Updates the enabled/disabled state of options in a grade's dropdowns based on allocations.
+     */
+    updateGradeSelects(gradeName) {
+        const selectsInGrade = this.gradeSelects.get(gradeName);
+        const allocations = this.currentAllocations[gradeName] || {};
         const currentCounts = {};
         selectsInGrade.forEach(s => {
-            if (s.value) {
-                currentCounts[s.value] = (currentCounts[s.value] || 0) + 1;
-            }
+            if (s.value) currentCounts[s.value] = (currentCounts[s.value] || 0) + 1;
         });
+
         selectsInGrade.forEach(select => {
             for (const option of select.options) {
                 if (!option.value) continue;
                 const subject = option.value;
-
-                const allocationCount = allocations[subject] || 99; // Allow unscheduled subjects to be added
-
+                const allocationCount = allocations[subject] ?? 99; // Allow unscheduled subjects
                 const currentCount = currentCounts[subject] || 0;
-                if (subject === select.value) {
-                    option.disabled = false;
-                    continue;
-                }
-                if (currentCount >= allocationCount) {
-                    option.disabled = true;
-                } else {
-                    option.disabled = false;
-                }
+
+                option.disabled = (subject !== select.value && currentCount >= allocationCount);
             }
         });
-    }
+    },
 
-    function highlightLastClasses() {
+    // --- Helper & Utility Functions ---
+
+    loadData(key, defaultValue) {
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return defaultValue;
+    },
+
+    saveData(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    },
+
+    getUniqueSubjects() {
+        const allSubjects = new Set([""]);
+        for (const grade in this.currentAllocations) {
+            for (const subject in this.currentAllocations[grade]) {
+                allSubjects.add(subject);
+            }
+        }
+        return [...allSubjects].sort();
+    },
+
+    assignSubjectColors() {
+        let colorIndex = 0;
+        Object.keys(subjectColors).forEach(key => delete subjectColors[key]);
+        this.uniqueSubjects.forEach(subject => {
+            if (subject) {
+                subjectColors[subject] = colorPalette[colorIndex % colorPalette.length];
+                colorIndex++;
+            }
+        });
+    },
+
+    applyCellColor(cell, subject) {
+        cell.style.backgroundColor = (subject && subjectColors[subject]) ? subjectColors[subject] : '';
+    },
+
+    highlightLastClasses() {
         const allGradeRows = document.querySelectorAll('tr[data-grade]');
         const gradeRowGroups = {};
         allGradeRows.forEach(row => {
+            row.classList.remove('last-class-row'); // Clean up old classes first
             const gradeName = row.dataset.grade;
-            if (!gradeRowGroups[gradeName]) {
-                gradeRowGroups[gradeName] = [];
-            }
+            if (!gradeRowGroups[gradeName]) gradeRowGroups[gradeName] = [];
             gradeRowGroups[gradeName].push(row);
         });
         for (const gradeName in gradeRowGroups) {
             const rows = gradeRowGroups[gradeName];
-            let lastClassRow = null;
-            for (let i = rows.length - 1; i >= 0; i--) {
-                if (!rows[i].querySelector('.intervalo')) {
-                    lastClassRow = rows[i];
-                    break;
-                }
-            }
+            const lastClassRow = rows.filter(r => !r.querySelector('.intervalo')).pop();
             if (lastClassRow) {
                 lastClassRow.classList.add('last-class-row');
             }
         }
-    }
+    },
 
-    // Initial Render
-    renderAllSchedules();
-
-    // --- Print Logic ---
-    const printBtn = document.getElementById('print-btn');
-    printBtn.addEventListener('click', () => {
-        window.print();
-    });
-
-
-    // --- Schedule Save Logic ---
-    const saveScheduleBtn = document.getElementById('save-schedule-btn');
-
-    function saveSchedule() {
-        const scheduleState = {};
-        const rows = document.querySelectorAll('tr[data-grade]');
-        rows.forEach((row, rowIndex) => {
-            const gradeName = row.dataset.grade;
-            const cells = row.querySelectorAll('.subject-cell');
-            cells.forEach((cell, cellIndex) => {
-                const select = cell.querySelector('select');
-                if (select) {
-                    const key = `${gradeName}-${rowIndex}-${cellIndex}`;
-                    scheduleState[key] = select.value;
-                }
-            });
-        });
-        localStorage.setItem('savedScheduleState', JSON.stringify(scheduleState));
-        alert('Horário salvo com sucesso!');
-    }
-
-    saveScheduleBtn.addEventListener('click', saveSchedule);
-
-
-    // --- Modal & Management Logic ---
-    const modal = document.getElementById('management-modal');
-    const manageBtn = document.getElementById('manage-btn');
-    const closeBtn = document.querySelector('.close-btn');
-    const gradeSelect = document.getElementById('grade-select');
-    const allocationsListDiv = document.getElementById('allocations-list');
-    const allocationForm = document.getElementById('allocation-form');
-
-    function loadAllocations() {
-        const saved = localStorage.getItem('classAllocations');
-        if (saved) {
-            return JSON.parse(saved);
-        }
-        return classAllocations; // Default
-    }
-
-    function saveAllocations() {
-        localStorage.setItem('classAllocations', JSON.stringify(currentAllocations));
-    }
-
-    function populateAllocationsList() {
+    populateAllocationsList() {
+        const allocationsListDiv = document.getElementById('allocations-list');
         allocationsListDiv.innerHTML = '';
-        const sortedGrades = Object.keys(currentAllocations).sort();
+        const sortedGrades = Object.keys(this.currentAllocations).sort();
         for (const gradeName of sortedGrades) {
             const gradeDiv = document.createElement('div');
             gradeDiv.innerHTML = `<h4>${gradeName}</h4>`;
             const subjectList = document.createElement('ul');
-            const subjectsInGrade = currentAllocations[gradeName];
+            const subjectsInGrade = this.currentAllocations[gradeName];
             const sortedSubjects = Object.keys(subjectsInGrade).sort();
             for (const subject of sortedSubjects) {
                 const count = subjectsInGrade[subject];
@@ -279,64 +314,20 @@ document.addEventListener('DOMContentLoaded', () => {
             gradeDiv.appendChild(subjectList);
             allocationsListDiv.appendChild(gradeDiv);
         }
+    },
+
+    populateModalGradeSelect() {
+        const gradeSelect = document.getElementById('grade-select');
+        const gradeNames = Object.keys(this.currentAllocations).sort();
+        gradeSelect.innerHTML = '';
+        gradeNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            gradeSelect.appendChild(option);
+        });
     }
+};
 
-    allocationForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const subjectInput = document.getElementById('subject-input');
-        const grade = gradeSelect.value;
-        const count = parseInt(document.getElementById('count-input').value, 10);
-        const subject = subjectInput.value.trim();
-
-        if (!subject || !grade || isNaN(count)) {
-            alert('Por favor, preencha todos os campos corretamente.');
-            return;
-        }
-
-        if (!currentAllocations[grade]) {
-            currentAllocations[grade] = {};
-        }
-        currentAllocations[grade][subject] = count;
-
-        saveAllocations();
-        populateAllocationsList(); // Refresh the list in the modal
-        renderAllSchedules(); // Re-render the main timetable
-        allocationForm.reset();
-        subjectInput.focus();
-    });
-
-    allocationsListDiv.addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-btn')) {
-            const grade = e.target.dataset.grade;
-            const subject = e.target.dataset.subject;
-            if (confirm(`Tem certeza que deseja excluir "${subject}" da turma "${grade}"?`)) {
-                delete currentAllocations[grade][subject];
-                saveAllocations();
-                populateAllocationsList();
-                renderAllSchedules();
-            }
-        }
-    });
-
-    const gradeNames = Object.keys(currentAllocations).sort();
-    gradeSelect.innerHTML = '';
-    gradeNames.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        gradeSelect.appendChild(option);
-    });
-
-    manageBtn.onclick = () => {
-        populateAllocationsList();
-        modal.style.display = 'block';
-    };
-    closeBtn.onclick = () => {
-        modal.style.display = 'none';
-    };
-    window.onclick = (event) => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    };
-});
+// --- App Initialization ---
+document.addEventListener('DOMContentLoaded', () => App.init());
